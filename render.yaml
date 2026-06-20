@@ -1,0 +1,55 @@
+# Render Blueprint — deploys the whole stack (Postgres + backend + frontend)
+# from this single repo on Render's free tier.
+#
+# Usage:
+#   1. Push this repo to GitHub.
+#   2. On https://dashboard.render.com  ->  New  ->  Blueprint  ->  pick the repo.
+#   3. Render reads this file and provisions all three services automatically.
+#
+# No credentials are hardcoded: the database URL is injected from the managed
+# database, and CORS is wired to the frontend URL via fromService references.
+
+databases:
+  - name: iom-db
+    databaseName: inventory
+    plan: free
+
+services:
+  # ----- Backend (FastAPI, Docker) -----
+  - type: web
+    name: iom-backend
+    runtime: docker
+    plan: free
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: iom-db
+          property: connectionString
+      # Render's Postgres connection string starts with "postgresql://".
+      # SQLAlchemy + psycopg2 also accept that, but to be explicit you can set
+      # the driver. The app's default works with the provided string.
+      - key: CORS_ORIGINS
+        fromService:
+          type: web
+          name: iom-frontend
+          property: host
+
+  # ----- Frontend (React build served by nginx, Docker) -----
+  - type: web
+    name: iom-frontend
+    runtime: docker
+    plan: free
+    dockerContext: ./frontend
+    dockerfilePath: ./frontend/Dockerfile
+    envVars:
+      - key: PORT
+        value: "80"
+      # Point nginx's /api proxy at the backend service.
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: iom-backend
+          property: host
