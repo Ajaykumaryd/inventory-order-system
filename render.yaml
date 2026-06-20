@@ -49,7 +49,4 @@ services:
         value: "80"
       # Point nginx's /api proxy at the backend service.
       - key: BACKEND_URL
-        fromService:
-          type: web
-          name: iom-backend
-          property: host
+        value: https://iom-backend.onrender.com
