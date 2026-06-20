@@ -48,10 +48,5 @@ services:
       - key: PORT
         value: "80"
       # Point nginx's /api proxy at the backend service.
-      - key: PROXY_SCHEME
-        value: https
       - key: BACKEND_URL
-        fromService:
-          type: web
-          name: iom-backend
-          property: host
+        value: https://iom-backend-no4j.onrender.com

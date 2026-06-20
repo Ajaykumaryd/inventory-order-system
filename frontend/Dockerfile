@@ -21,8 +21,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 # BACKEND_URL is substituted into the nginx template at container start so the
 # same image works locally (docker-compose) and in the cloud.
-ENV PROXY_SCHEME=http
-ENV BACKEND_URL=backend:8000
+ENV BACKEND_URL=http://backend:8000
 ENV PORT=80
 EXPOSE 80
 
